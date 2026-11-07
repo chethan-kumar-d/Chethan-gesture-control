@@ -1,0 +1,15 @@
+# Local Python environment and generated files
+.venv/
+__pycache__/
+*.pyc
+*.log
+
+# Local environment secrets (a sanitized example may be committed)
+.env
+.env.*
+!.env.example
+
+# Generated review archives and inspected source snapshots
+review_backup*/
+*.zip
+/backups/
