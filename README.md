@@ -1,12 +1,12 @@
 # Chethan Gesture Control
 
-**Maintainer: Chethan Kumar D**
+**Developer: Chethan Kumar D**
 
 ## Overview
 
-Chethan Gesture Control is a Windows desktop application that uses a webcam to translate hand gestures into mouse actions. Python, OpenCV, MediaPipe, NumPy, and PyAutoGUI provide tracking, gesture recognition, cursor control, and an on-screen status overlay.
+Chethan Gesture Control is a Windows desktop application that turns hand gestures into mouse actions through a webcam. It supports cursor movement, left and right clicks, dragging, and vertical scrolling, with a live camera view and on-screen gesture status.
 
-Chethan Kumar D maintains this customized version, including its branding, Windows launch workflow, documentation, and gesture-control refinements. The application builds on existing hand gesture control source code; this project does not claim sole authorship of the underlying implementation.
+Built with Python, OpenCV, MediaPipe, NumPy, and PyAutoGUI, the application combines real-time hand tracking with gesture recognition for hands-free desktop interaction. It includes adaptive cursor smoothing, confirmed pinch clicks, drag-and-drop control, and a Windows launcher for convenient startup.
 
 ## Features
 
@@ -116,11 +116,3 @@ Run focused mocked checks without opening the webcam or controlling the real mou
 The checks cover confirmation, pinch release and cooldown, grab/drop, movement transitions, tremor suppression, hand loss, capture failure, low-FPS suspension, and exception cleanup. They do not establish real-camera recognition accuracy or performance.
 
 For manual verification, check pointing and stopping, one click per held pinch, separation and repeat, sustained fist dragging, open-palm release, suppressed click/scroll while dragging, and hand-loss recovery. Review the console timing summaries after a user-started session to measure capture and inference on your hardware.
-
-## Attribution and licensing
-
-This version derives from source supplied as `Control_pc_using_Hand-Gesture-main`, whose documentation used the names **Hand Gesture Control System V1** and **Project J.A.R.V.I.S (Gesture Interface V3)**. Chethan Kumar D is credited for customization and maintenance, not original authorship of all borrowed code.
-
-No standalone upstream license, original author identity, or repository URL was included in the supplied project. No license or ownership rights are inferred here. Preserve any original copyright and license notices supplied with upstream materials. Existing source references and dependency license notices remain unchanged.
-
-OpenCV, MediaPipe, NumPy, PyAutoGUI, and the Hand Landmarker model remain subject to their respective terms. The smoothing implementation retains its original One Euro Filter source reference in `gesture_v3/perception/smoothing.py`.
