@@ -1,7 +1,11 @@
 # Chethan Gesture Control - V3
 
-Customized and maintained by **Chethan Kumar D**, based on existing hand gesture control source code.
+**Maintainer: Chethan Kumar D**
 
-See [README.md](README.md) for requirements, launch instructions, controls, configuration, and desktop shortcuts. Launch with `Start_Gesture_Control.cmd` using the existing project-local `.venv`.
+This customized version builds on existing hand gesture control source code. Chethan Kumar D maintains its branding, launch workflow, documentation, and control refinements without claiming sole authorship of the underlying implementation.
 
-Original-source attribution and third-party acknowledgments are retained in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+See [README.md](README.md) for the overview, working features, requirements, installation, desktop launcher instructions, gesture guide, quitting instructions, troubleshooting, verification, and attribution.
+
+Start the application with `Start_Gesture_Control.cmd` using the project-local `.venv`. Launching opens the webcam and enables mouse control; focus the camera window and press Q to quit.
+
+Original source and third-party components retain their applicable copyright and license notices. See the attribution and licensing section in the main README.

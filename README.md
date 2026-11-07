@@ -1,77 +1,126 @@
 # Chethan Gesture Control
 
-A Python desktop application that uses webcam hand tracking to control the mouse, with a live gesture status and FPS overlay.
+**Maintainer: Chethan Kumar D**
 
-**Customizer and maintainer: Chethan Kumar D**
+## Overview
 
-This is a customized and rebranded version of an existing hand gesture control project. Chethan Kumar D maintains this version; the underlying application was adapted from existing source code. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for original-source attribution.
+Chethan Gesture Control is a Windows desktop application that uses a webcam to translate hand gestures into mouse actions. Python, OpenCV, MediaPipe, NumPy, and PyAutoGUI provide tracking, gesture recognition, cursor control, and an on-screen status overlay.
+
+Chethan Kumar D maintains this customized version, including its branding, Windows launch workflow, documentation, and gesture-control refinements. The application builds on existing hand gesture control source code; this project does not claim sole authorship of the underlying implementation.
+
+## Features
+
+- Relative cursor movement from the index-finger base, with adaptive smoothing, limited acceleration, and a dead zone for small movements.
+- Confirmed left and right pinches, with one click per pinch, separation required before another click, and a click cooldown.
+- Cursor movement suspended during pinch confirmation and while a pinch is held.
+- Fist-to-grab and open-palm-to-drop dragging, without repeated toggling while held.
+- Vertical hand-motion scrolling, blocked during dragging along with click actions.
+- Movement references reset when switching modes or losing tracking, to avoid carrying stale movement into a new action.
+- Drag release on hand loss, capture failure, low-FPS suspension, and normal loop cleanup.
+- A live camera view with gesture visuals and FPS; console capture/inference timing summaries on exit.
+
+Recognition and perceived responsiveness depend on lighting, camera placement, hand pose, and hardware. Timing summaries are measurements from the current session, not a claim of improved performance.
 
 ## Requirements
 
-- Windows, a webcam, and a desktop session.
-- The existing project-local `.venv`, with dependencies from `requirements.txt` installed.
-- `hand_landmarker.task` beside `main_v3.py`.
+- Windows with an interactive desktop session and a working webcam. The application selects camera index `0`.
+- Python with compatible releases of the packages in [requirements.txt](requirements.txt).
+- A project-local virtual environment named `.venv`.
+- The supplied `hand_landmarker.task` model beside `main_v3.py`.
 
-Dependencies include OpenCV, MediaPipe, NumPy, and PyAutoGUI. Keep `.venv` in the project directory.
+The virtual environment is excluded from Git. A fresh download or clone needs its own local environment. Keep the required model in the project folder.
 
-## Launch
+## Installation
 
-Double-click **Start_Gesture_Control.cmd**. It uses `.venv\Scripts\python.exe` and sets the working directory to its own folder, regardless of where it is started. Missing launch files and application errors remain visible in the console.
+1. Clone or download the project and open PowerShell in its root folder.
+2. If a working `.venv` already exists, keep it. Otherwise create one:
 
-Alternatively, from PowerShell in the project folder:
+   ```powershell
+   py -m venv .venv
+   ```
+
+3. Install the project requirements with that environment's interpreter:
+
+   ```powershell
+   .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+   ```
+
+4. Confirm that `.venv\Scripts\python.exe`, `main_v3.py`, and `hand_landmarker.task` are present. Allow desktop applications to access the webcam in Windows camera privacy settings.
+
+Use a Python version supported by all required packages. If installation reports that no compatible distribution exists, use a compatible Python installation to create the environment rather than renaming or copying an environment from another computer.
+
+## Launch and desktop shortcut
+
+Double-click **Start_Gesture_Control.cmd**. The launcher runs the existing `.venv\Scripts\python.exe` and sets its working directory to the project folder, so it can be started from any directory. It checks for the interpreter, entry point, and model, and keeps launch errors visible in the console.
+
+To create a desktop shortcut:
+
+1. Right-click `Start_Gesture_Control.cmd` and choose **Show more options > Send to > Desktop (create shortcut)**, or **Send to > Desktop (create shortcut)** where available.
+2. Rename the shortcut **Chethan Gesture Control**.
+3. In shortcut Properties, confirm that **Target** is the full, quoted path to `Start_Gesture_Control.cmd`. **Start in** is optional because the launcher sets its own working directory.
+
+Keep the project files together. After moving the project, update the shortcut target; a virtual environment may need recreation after relocation.
+
+For a manual launch, run this from the project root:
 
 ```powershell
 .\.venv\Scripts\python.exe .\main_v3.py
 ```
 
-Starting the application opens the webcam. Focus the camera window and press **Q** to quit.
+Launching starts webcam tracking and real mouse control. Keep one hand clearly visible; the current loop uses the first detected hand.
 
-## Existing controls
+## Gesture guide
 
-| Gesture | Action |
+| Gesture | Behavior |
 | --- | --- |
-| Open palm, all fingers extended | Drop an active drag; otherwise move the cursor |
-| Thumb and index pinch | Left click |
-| Thumb and middle pinch | Right click |
-| Index and middle raised, ring and pinky lowered | Scroll by moving the hand vertically |
-| Closed fist | Grab once and keep dragging while held |
-| Q key in the camera window | Quit |
+| Open palm with all fingers extended and thumb out | Move the cursor; if dragging, release once before resuming movement |
+| Thumb and index finger pinched, with a stable hand | Confirm one left click; separate the thumb from both index and middle fingers before another click |
+| Thumb and middle finger pinched, with a stable hand | Confirm one right click; separate the thumb from both index and middle fingers before another click |
+| Index and middle fingers raised, ring and pinky lowered | Scroll up or down by moving the hand vertically |
+| Closed fist, with all four fingers curled | Press and hold the left mouse button once; move the fist to drag |
+| Open palm during dragging | Release the left mouse button once |
+| Hand leaves the camera view | Release an active drag and reset tracking/movement references |
 
-While drag is active, eligible hand movement moves the held cursor. Losing hand tracking releases active dragging. The existing low-FPS safety pause remains in place. A held fist never repeatedly toggles. Pinches confirm once and require separation before another click; cursor movement freezes during confirmation.
+While dragging, pinch and scroll actions are suppressed. Drag movement is allowed for fist and idle classifications; an open palm drops the item. Holding a fist never repeatedly toggles the button. Movement is rebased on mode changes, so the first frame in a new movement mode establishes a reference.
 
-## Configuration and structure
+After tracking loss or a safety suspension, visibly separate the thumb from both pinch fingers before attempting another click. Pinch confirmation accumulates over frames, so its duration depends on frame rate. Keep fingers distinct from a closed fist when clicking: fist recognition takes priority.
 
-Edit `gesture_v3/config.py` for application settings, sensitivity, gesture thresholds, cooldowns, and UI colors. Root-level `config.py` belongs to the legacy implementation.
+## Quit
 
-- `main_v3.py`: application entry point.
-- `gesture_v3/core/`: application loop and action handling.
-- `gesture_v3/perception/`: tracking and smoothing.
-- `gesture_v3/intent/`: gesture classification.
-- `gesture_v3/control/`: cursor physics.
-- `gesture_v3/ui/`: visual overlay.
+Focus the camera window and press the **Q** key (lowercase `q`). Normal loop cleanup releases an active drag, closes the camera and application windows, and prints mean capture-read and inference times when samples are available. The launcher console closes on success and pauses on an application error.
 
-## Desktop shortcut
+## Troubleshooting
 
-1. Right-click `Start_Gesture_Control.cmd` and choose **Show more options > Send to > Desktop (create shortcut)**, or **Send to > Desktop (create shortcut)** where available.
-2. Rename the shortcut **Chethan Gesture Control**.
-3. In Properties, confirm that **Target** contains the full, quoted path to the launcher. **Start in** is optional because the launcher sets its own working directory.
+| Problem | What to check |
+| --- | --- |
+| Launcher reports a missing interpreter | Create `.venv` in the project root and install requirements using its interpreter. Activating another environment does not change the launcher's interpreter. |
+| `ModuleNotFoundError` | Run the installation command above with `.venv\Scripts\python.exe`. |
+| Missing model error | Restore `hand_landmarker.task` beside `main_v3.py`. Launch through the provided script or run manually from the project root. |
+| Camera view is unavailable or frozen | Check the webcam connection, Windows desktop-app camera permissions, and whether another application is using the camera. The current application uses camera index `0`. |
+| Click does not register | Keep the hand stable through confirmation, visibly separate both pinch pairs before retrying, allow the existing cooldown, and ensure dragging is not active. |
+| Drag does not release | Show a fully open palm or remove the hand from view. Focus the camera window and press Q to exit normally. |
+| Cursor is stationary or shows a safety pause | Use the open-palm pose outside dragging, improve lighting, and check the FPS display. The existing low-FPS safeguard suspends actions below its configured threshold after startup. |
+| Pointer trembles or feels slow | Use steady lighting and a clear, consistent hand distance. Small movements are intentionally suppressed. Verify actual camera behavior before adjusting settings. |
+| `FailSafeException` | PyAutoGUI's corner failsafe remains enabled. Move the pointer away from the corner and restart; do not disable the safeguard. |
 
-Keep the project and `.venv` together. If the project moves, update the shortcut target; virtual environments may need recreation after relocation.
+## Configuration and verification
 
-## Attribution and licensing
+Current application settings are in `gesture_v3/config.py`. Root-level `config.py` belongs to the legacy implementation. The entry point is `main_v3.py`; tracking, gesture classification, cursor movement, and HUD code are under `gesture_v3/`.
 
-This rebrand does not claim original authorship of all underlying code or grant new rights to upstream code, dependencies, or model assets. Preserve original copyright and license notices. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
-## Control regression checks
-
-Run without opening the webcam or controlling the real mouse:
+Run focused mocked checks without opening the webcam or controlling the real mouse:
 
 ```powershell
 .\.venv\Scripts\python.exe tests/test_controls.py
 ```
 
-The checks inject a fake mouse module and forbid camera creation. They cover pinch confirmation and release, grab/drop, movement transitions, stationary tremor, hand loss, capture failure, low-FPS suspension, and exception cleanup.
+The checks cover confirmation, pinch release and cooldown, grab/drop, movement transitions, tremor suppression, hand loss, capture failure, low-FPS suspension, and exception cleanup. They do not establish real-camera recognition accuracy or performance.
 
-For a user-started camera session, the console prints mean capture-read and inference times on exit, with call counts. Mocked timing is not a camera performance measurement. Capture settings, inference model, and the low-FPS threshold remain unchanged; no performance improvement is claimed.
+For manual verification, check pointing and stopping, one click per held pinch, separation and repeat, sustained fist dragging, open-palm release, suppressed click/scroll while dragging, and hand-loss recovery. Review the console timing summaries after a user-started session to measure capture and inference on your hardware.
 
-Manual verification: check slow/fast pointing and stopping, hold each pinch (one click), separate and repeat, hold a fist while dragging, open your palm to drop once, try pinching/scrolling during a drag, and remove/reintroduce your hand. Confirm no pointer jumps, unexpected actions, or stuck drag. Verify perceived responsiveness and timing with the actual webcam.
+## Attribution and licensing
+
+This version derives from source supplied as `Control_pc_using_Hand-Gesture-main`, whose documentation used the names **Hand Gesture Control System V1** and **Project J.A.R.V.I.S (Gesture Interface V3)**. Chethan Kumar D is credited for customization and maintenance, not original authorship of all borrowed code.
+
+No standalone upstream license, original author identity, or repository URL was included in the supplied project. No license or ownership rights are inferred here. Preserve any original copyright and license notices supplied with upstream materials. Existing source references and dependency license notices remain unchanged.
+
+OpenCV, MediaPipe, NumPy, PyAutoGUI, and the Hand Landmarker model remain subject to their respective terms. The smoothing implementation retains its original One Euro Filter source reference in `gesture_v3/perception/smoothing.py`.
